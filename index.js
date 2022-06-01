@@ -5,9 +5,13 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
+require('dotenv').config();
+
 const app = express();
 const PORT = process.env.PORT || 4200;
+const DOMAIN = process.env.DOMAIN;
 
+console.log(process.env)
 app.set('view engine', 'pug')
 app.use(express.static('images'))
 
@@ -41,7 +45,7 @@ app.get("/ticket/:id", (req, res) => {
     try{
         const { id } = req.params;
 
-        res.render('metadata', { image_src: `${req.hostname}/ticket/${id}/image` });
+        res.render('metadata', { image_src: `${DOMAIN}/ticket/${id}/image` });
         console.log(id);
     }catch(err){
         console.log('Error: ', err);
