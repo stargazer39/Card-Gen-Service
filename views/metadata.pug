@@ -8,3 +8,18 @@ html
     meta(property="og:image", itemprop="image" content=image_src)
     meta(property="og:type", content="website")
     meta(property="og:url", content=image_src)
+
+    style(type='text/css').
+      .image-class {
+        height: 100%;
+        width: 100%;
+        object-fit: contain;
+      }
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        background: #0e0e0e
+      }
+  body
+    img(src=image_src, alt="Ticket").image-class
