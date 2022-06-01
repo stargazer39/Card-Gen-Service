@@ -6,16 +6,24 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const cors = require('cors');
 const sharp = require('sharp');
-
+const Minio = require('minio');
 require('dotenv').config();
+
+let minioClient = new Minio.Client({
+    endPoint: process.env.MINIO_ENDPOINT,
+    useSSL: false,
+    port: 9000,
+    accessKey: process.env.MINIO_ACCESS_KEY,
+    secretKey: process.env.MINIO_SECRET_KEY
+});
 
 const app = express();
 const PORT = process.env.PORT || 4200;
 const DOMAIN = process.env.DOMAIN;
 
 app.use(cors());
-app.set('view engine', 'pug')
-app.use(express.static('images'))
+app.set('view engine', 'pug');
+app.use(express.static('images'));
 
 app.post("/ticket", upload.any(), async (req, res) => {
     try{
@@ -25,7 +33,7 @@ app.post("/ticket", upload.any(), async (req, res) => {
     
         if(req.files.length < 1){
             res.sendStatus(400);
-            return
+            return;
         }
 
         // Convert file to webp
@@ -35,13 +43,10 @@ app.post("/ticket", upload.any(), async (req, res) => {
             .toBuffer();
         
         // Write the image to Disk
-        fs.writeFile(`images/${id}.webp`, buffer, (err) => {
-            if (err) {
-                console.log('Error: ', err);
-                res.status(500).send('An error occurred: ' + err.message);
-            } else {
-                res.status(200).json({ id: id });
-            }
+        await minioClient.putObject('hackathon-card', `images/${id}.webp`, buffer);
+
+        res.status(200).json({
+            id: id
         });
     }catch(err){
         console.log('Error: ', err);
@@ -61,11 +66,14 @@ app.get("/ticket/:id", (req, res) => {
     } 
 });
 
-app.get("/ticket/:id/image", (req, res) => {
+app.get("/ticket/:id/image", async (req, res) => {
     try{
         const { id } = req.params;
 
-        res.sendFile(path.resolve(`images/${id}.webp`));
+        let object = await minioClient.getObject("hackathon-card", `images/${id}.webp`)
+
+        res.setHeader('content-type', 'image/webp')
+        res.pipe(object);
         console.log(id);
     }catch(err){
         console.log('Error: ', err);
