@@ -4,6 +4,7 @@ const upload = multer();
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
+const cors = require('cors');
 
 require('dotenv').config();
 
@@ -11,7 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 4200;
 const DOMAIN = process.env.DOMAIN;
 
-console.log(process.env)
+app.use(cors());
 app.set('view engine', 'pug')
 app.use(express.static('images'))
 
@@ -26,6 +27,8 @@ app.post("/ticket", upload.any(), (req, res) => {
             res.sendStatus(400);
             return
         }
+
+        console.log(id);
 
         fs.writeFile(`images/${id}.png`, req.files[0].buffer, (err) => {
             if (err) {
