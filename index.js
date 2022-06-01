@@ -73,7 +73,7 @@ app.get("/ticket/:id/image", async (req, res) => {
         let object = await minioClient.getObject("hackathon-card", `images/${id}.webp`)
 
         res.setHeader('content-type', 'image/webp')
-        res.pipe(object);
+        object.pipe(res);
         console.log(id);
     }catch(err){
         console.log('Error: ', err);
